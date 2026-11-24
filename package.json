@@ -1,12 +1,14 @@
 {
   "name": "reflector-activity",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Local dashboard ranking D-STAR, YSF and DMR reflectors by recent activity",
   "type": "module",
   "main": "server.mjs",
   "private": true,
   "license": "MIT",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "start": "node server.mjs"
   },
