@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reflector Activity User Guide</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1b1f24; --mute:#667085; --line:#e4e7ec; --accent:#1769e0; --warnbg:#fff4e5; --warn:#b54708; --code:#eef1f5; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1318; --card:#171c23; --ink:#e8ecf1; --mute:#8b95a3; --line:#27303b; --accent:#6aa6ff; --warnbg:#2a2113; --warn:#ffb86b; --code:#1f2630; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui, "Segoe UI", sans-serif; }
+  .wrap { max-width: 800px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 20px; margin: 36px 0 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+  h3 { font-size: 16px; margin: 20px 0 4px; }
+  p, li { margin: 6px 0; }
+  .sub { color: var(--mute); margin: 0 0 18px; }
+  a { color: var(--accent); }
+  code, kbd { background: var(--code); border-radius: 4px; padding: 1px 6px; font: 14px ui-monospace, Consolas, monospace; }
+  pre { background: var(--code); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font: 14px/1.45 ui-monospace, Consolas, monospace; }
+  table { border-collapse: collapse; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; font-size: 15px; }
+  th, td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--code); border-top: 0; font-weight: 600; }
+  .note { background: var(--warnbg); border: 1px solid var(--warn); border-radius: 8px; padding: 10px 14px; margin: 14px 0; }
+  .toc { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 18px; }
+  .toc ol { margin: 4px 0; padding-left: 20px; }
+  .box { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 2px 16px 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Reflector Activity — User Guide</h1>
+<p class="sub">Find the busiest D-STAR, YSF and DMR reflectors right now. Runs on your own PC; nothing is uploaded anywhere.</p>
+
+<div class="toc"><strong>Contents</strong>
+<ol>
+  <li><a href="#what">What it does</a></li>
+  <li><a href="#start">Quick start (Windows)</a></li>
+  <li><a href="#page">Using the page</a></li>
+  <li><a href="#modes">What the numbers mean, per mode</a></li>
+  <li><a href="#settings">Settings</a></li>
+  <li><a href="#network">What it does on the network (please read)</a></li>
+  <li><a href="#trouble">Troubleshooting</a></li>
+  <li><a href="#other">Mac, Linux, or your own Node</a></li>
+  <li><a href="#data">Data sources, privacy and disclaimer</a></li>
+</ol></div>
+
+<h2 id="what">1. What it does</h2>
+<p>You pick a mode (D-STAR, YSF or DMR) and a time window (15, 30 or 60 minutes), and it lists the reflectors for that mode ranked by how active they have been. Use it to find a reflector that actually has people on it, instead of linking to an empty one.</p>
+<p>It is a small program that runs on your PC. It collects activity in the background and shows it as a web page that only your own computer can open (<code>http://localhost:8787</code>).</p>
+<div class="note"><strong>It only knows what it has seen since it started.</strong> Leave it running for about 30 minutes before trusting a 30-minute average, and longer for the 60-minute view. A yellow banner at the top of the page tells you while it is still warming up. History is kept for 24 hours and survives restarts.</div>
+
+<h2 id="start">2. Quick start (Windows)</h2>
+<ol>
+  <li><strong>Unzip</strong> the folder somewhere permanent, for example <code>C:\ReflectorActivity</code>. Don't run it from inside the zip file.</li>
+  <li><strong>Double-click <code>start.cmd</code>.</strong> A black window opens and your browser opens the page. Keep that window open while you use the app; closing it stops the app.</li>
+  <li><strong>First run only:</strong> it asks for your callsign. Type your own and press Enter, or just press Enter to skip. See <a href="#settings">Settings</a> for what this is used for.</li>
+  <li>If Windows asks whether to let <code>node.exe</code> use the network, choose <strong>Allow</strong> (private networks is enough). The app needs this to talk to the reflectors.</li>
+  <li>If the browser doesn't open by itself, go to <a href="http://localhost:8787">http://localhost:8787</a>.</li>
+</ol>
+<p>To stop it: click the black window and press <kbd>Ctrl</kbd>+<kbd>C</kbd>, or close the window. To start it again later, double-click <code>start.cmd</code> again.</p>
+<p>Windows SmartScreen or your antivirus may warn about <code>runtime\node.exe</code> because it is a program from a downloaded zip. It is the official Node.js runtime, which the app runs on. If you would rather not trust it, install Node yourself (see <a href="#other">section 8</a>) and delete the <code>runtime</code> folder.</p>
+
+<h2 id="page">3. Using the page</h2>
+<table>
+<tr><th style="width:30%">Control</th><th>What it does</th></tr>
+<tr><td><strong>D-STAR / YSF / DMR</strong></td><td>Switch mode. Each mode counts activity differently; see the next section.</td></tr>
+<tr><td><strong>15 / 30 / 60 min</strong></td><td>The averaging window. Counts are shown as "per 30 minutes" so different windows are comparable.</td></tr>
+<tr><td><strong>Filter box</strong></td><td>Type part of a reflector name, country or description (for example <code>Thailand</code> or <code>XLX307</code>).</td></tr>
+<tr><td><strong>show idle</strong></td><td>Also list reflectors with no activity in the window. Off by default.</td></tr>
+<tr><td><strong>Column headings</strong></td><td>Click a heading to sort by it. The blue heading is the current sort.</td></tr>
+<tr><td><strong>Click a row</strong></td><td>Expands it: the per-module breakdown (D-STAR), the last time it was heard, a link to that reflector's own dashboard, or its address (YSF).</td></tr>
+<tr><td><strong>Orange dot</strong></td><td>Heard in the last 5 minutes.</td></tr>
+<tr><td><strong>Last-hour bars</strong></td><td>A small bar chart of the last hour in 5-minute steps. Transmissions for D-STAR and DMR; connected users for YSF.</td></tr>
+</table>
+<p>The page refreshes itself every 30 seconds.</p>
+
+<h2 id="modes">4. What the numbers mean, per mode</h2>
+<p>The three systems publish very different amounts of information, so "activity" is measured differently for each. This matters when you compare tabs.</p>
+
+<h3>D-STAR</h3>
+<ul>
+  <li><strong>Tx/30m</strong> — transmissions per 30 minutes. <strong>Stations</strong> — different callsigns that transmitted. <strong>Linked</strong> — nodes or users currently connected.</li>
+  <li>Covers about 560 XLX reflectors (each XLX also answers as XRF, DCS and REF with the same number, so those are included) and about 45 original DPlus REF reflectors that publish a public web dashboard. Reflectors that don't answer or don't publish anything can't be seen.</li>
+  <li>The module shown next to a name (for example <code>XLX307 · mod C</code>) is its busiest module. Expand the row for all of them.</li>
+  <li><strong>Watch the Stations column.</strong> One stuck or chatty node can produce hundreds of transmissions from a single callsign. A busy reflector has several different callsigns.</li>
+</ul>
+
+<h3>DMR</h3>
+<ul>
+  <li>Rows are <strong>talkgroups</strong> (TG numbers), with the name TGIF gives them.</li>
+  <li><strong>Covers the TGIF network only.</strong> BrandMeister, DMR+ and others are not included, so a talkgroup that is busy elsewhere may not appear.</li>
+  <li>Only talkgroups heard during the last hour are listed.</li>
+</ul>
+
+<h3>YSF</h3>
+<ul>
+  <li>YSF reflectors do not publish who is talking, only how many users are connected. So there are two kinds of rows:</li>
+  <li><strong>The 50 busiest reflectors (by connected users)</strong> are "listened to": the app connects to them silently and counts real transmissions, so they have real <strong>Tx/30m</strong> and <strong>Stations</strong> values. Which 50 is re-chosen every 15 minutes.</li>
+  <li><strong>All other reflectors</strong> show a dash for Tx and Stations and only have <strong>Avg users</strong> (average connected users in the window). Click the "Avg users" heading to sort the whole list by that.</li>
+  <li>Connected users is not the same as talking. Bridges and always-linked nodes count as users even when nobody is speaking, so some reflectors sit at a high, constant user count (999 is a common ceiling). Compare Tx and Stations before choosing.</li>
+  <li>Without a callsign configured, the listener is off and the YSF tab ranks by connected users only.</li>
+</ul>
+
+<h2 id="settings">5. Settings</h2>
+<p>Settings live in <code>config.json</code> in the app folder. Edit it with Notepad and restart the app. Delete the file to be asked again at the next start.</p>
+<pre>{
+  "callsign": "N0CALL",
+  "listenTop": 50
+}</pre>
+<table>
+<tr><th style="width:25%">Setting</th><th>Meaning</th></tr>
+<tr><td><code>callsign</code></td><td><strong>Use your own callsign.</strong> It is only used to identify the YSF listener to reflectors (see below). Leave it empty (<code>""</code>) to turn the YSF listener off completely.</td></tr>
+<tr><td><code>listenTop</code></td><td>How many of the busiest YSF reflectors to listen to. Default 50, maximum 200. Set <code>0</code> to turn the listener off. Lower is gentler on the network.</td></tr>
+</table>
+<h3>Other options (environment variables)</h3>
+<table>
+<tr><th style="width:25%">Variable</th><th>Meaning</th></tr>
+<tr><td><code>PORT</code></td><td>Web page port. Default 8787. Use another if something else is using it, for example in a command prompt: <code>set PORT=8800</code> then <code>start.cmd</code>.</td></tr>
+<tr><td><code>NO_BROWSER</code></td><td>Set to anything (for example <code>set NO_BROWSER=1</code>) to stop <code>start.cmd</code> opening the browser.</td></tr>
+</table>
+
+<h2 id="network">6. What it does on the network (please read)</h2>
+<p>The app talks to public reflectors and websites that volunteers run. It is designed to be light, but you should know what it does, and please don't make it heavier.</p>
+<table>
+<tr><th style="width:22%">Mode</th><th>Traffic</th></tr>
+<tr><td>D-STAR (XLX)</td><td>One small status request to each XLX reflector about every 30 seconds.</td></tr>
+<tr><td>D-STAR (REF)</td><td>One web page request to each of about 45 reflector dashboards about once a minute. A list is refreshed weekly.</td></tr>
+<tr><td>YSF status</td><td>One small status request per reflector about once a minute (about 1,700 reflectors).</td></tr>
+<tr><td>YSF listener</td><td>Connects to up to <code>listenTop</code> reflectors as <strong>a silent, listen-only station using your callsign</strong>, sending a keep-alive about every 5 seconds. You will appear in those reflectors' connected-user lists. It never transmits.</td></tr>
+<tr><td>DMR</td><td>A single live connection to TGIF's public last-heard feed, the same one their web page uses.</td></tr>
+</table>
+<ul>
+  <li><strong>Use your own callsign</strong> in the YSF settings. Don't use someone else's or a made-up one, and don't share your config file.</li>
+  <li>If a reflector operator doesn't want listeners, set <code>listenTop</code> to <code>0</code>. Reflectors can block callsigns.</li>
+  <li>One copy per person is plenty. Running many copies, or shortening the polling intervals in the code, multiplies the load on other people's servers.</li>
+  <li>When it fetches REF dashboards and host lists, the app identifies itself as "reflector-activity" so operators can see what it is.</li>
+</ul>
+
+<h2 id="trouble">7. Troubleshooting</h2>
+<table>
+<tr><th style="width:32%">Problem</th><th>What to try</th></tr>
+<tr><td>The black window closes immediately</td><td>It shouldn't: it stays open and shows an error. If it closes anyway, you probably ran it from inside the zip. Unzip the folder first.</td></tr>
+<tr><td><em>Port 8787 is already in use</em></td><td>The app is probably already running (look for another black window), or another program uses that port. Close the other copy, or start with a different <code>PORT</code> (see Settings).</td></tr>
+<tr><td>The page says "Can't reach the local server"</td><td>The black window was closed, or the app stopped. Look at the window for an error message, then run <code>start.cmd</code> again.</td></tr>
+<tr><td>The list is empty or very short at the start</td><td>Normal for the first minute or two, and the averages need about 30 minutes. Tick "show idle" to see reflectors even without activity.</td></tr>
+<tr><td>No data at all for D-STAR or YSF</td><td>A firewall is probably blocking the app. Allow <code>node.exe</code> in Windows Firewall (private networks), and check that your router or security software doesn't block outgoing UDP.</td></tr>
+<tr><td>DMR tab is empty</td><td>Check your internet connection. The black window shows <code>[tgif] connected</code> when the feed is up.</td></tr>
+<tr><td>YSF tab shows only "Avg users"</td><td>The listener is off. Put your callsign in <code>config.json</code> and restart.</td></tr>
+<tr><td>A reflector I know is busy doesn't appear</td><td>It may not publish status or may not be covered (see section 4). The page only knows what the sources publish.</td></tr>
+<tr><td>Weird or stale data after a crash</td><td>The app repairs a damaged history file by itself. To start completely fresh, stop the app and delete the <code>data</code> folder.</td></tr>
+</table>
+<p>The black window's messages are also saved in <code>data\server.log</code>. If you report a problem, include the last lines of that file.</p>
+
+<h2 id="other">8. Mac, Linux, or your own Node</h2>
+<p>The Windows zip carries its own copy of Node.js in the <code>runtime</code> folder, so nothing needs installing. On other systems, or if you prefer your own Node:</p>
+<ol>
+  <li>Install <strong>Node.js 24 or newer</strong> from <a href="https://nodejs.org">nodejs.org</a>. (The app uses Node's built-in SQLite, which older versions lack.)</li>
+  <li>In the app folder run <code>npm install --omit=dev</code> once (not needed if <code>node_modules</code> is already there).</li>
+  <li>Start it with <code>./start.sh</code> (Mac/Linux) or <code>start.cmd</code> (Windows, uses your Node if there is no <code>runtime</code> folder). Or run <code>node server.mjs</code> directly and open <code>http://localhost:8787</code>.</li>
+</ol>
+
+<h2 id="data">9. Data sources, privacy and disclaimer</h2>
+<h3>Where the data comes from</h3>
+<ul>
+  <li><strong>D-STAR:</strong> the public XLX reflector list at xlxapi.rlx.lu and each reflector's own status feed; and the public "DPLUS Dashboard" web pages of REF reflectors, found from Pi-Star's host list.</li>
+  <li><strong>YSF:</strong> the reflector list from DVRef (<a href="https://dvref.com/aup/">dvref.com</a>), downloaded from Pi-Star's public mirror, then each reflector's status feed and, for the busiest, its voice stream.</li>
+  <li><strong>DMR:</strong> the TGIF Network's public last-heard feed (<a href="https://tgif.network">tgif.network</a>).</li>
+</ul>
+<p>Credit and thanks to the volunteers who run these reflectors and services. Their data stays theirs; the app only reads what they publish.</p>
+<h3>Bundled software</h3>
+<p>The Windows zip includes the <a href="https://nodejs.org">Node.js</a> runtime in the <code>runtime</code> folder. Node.js is MIT-licensed; its licence and third-party notices are in <code>runtime\LICENSE-node.txt</code>. The libraries in <code>node_modules</code> carry their own licences in their folders.</p>
+<h3>Privacy</h3>
+<ul>
+  <li>Everything is stored on your PC, in the <code>data</code> folder. Nothing is sent to the author or any third party.</li>
+  <li>The web page only answers to your own computer; other devices on your network can't open it.</li>
+  <li>The only thing that identifies you to anyone is your callsign, sent to the YSF reflectors the listener joins (only if you set one).</li>
+</ul>
+<h3>Limits and disclaimer</h3>
+<ul>
+  <li>The numbers are estimates built from public, unofficial sources that can change or disappear without notice. They show where activity is likely, not an exact count.</li>
+  <li>If a source changes its format or blocks access, that part of the app will stop updating.</li>
+  <li>Free for personal amateur-radio use, provided as is, without warranty. You are responsible for how you use it, including your callsign and the load you put on other people's servers.</li>
+</ul>
+<p class="sub" style="margin-top:28px"><a href="/">&larr; Back to the app</a></p>
+</div>
+</body>
+</html>

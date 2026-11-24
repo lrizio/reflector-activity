@@ -1,0 +1,12 @@
+# Per-user data and settings (never commit: history, logs, and the user's own callsign)
+data/
+config.json
+
+# Dependencies and build output
+node_modules/
+dist/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log

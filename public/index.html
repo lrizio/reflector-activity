@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reflector Activity</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1b1f24; --mute:#667085; --line:#e4e7ec; --accent:#1769e0; --hot:#d9480f; --bar:#9bbcf0; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1318; --card:#171c23; --ink:#e8ecf1; --mute:#8b95a3; --line:#27303b; --accent:#6aa6ff; --hot:#ff8a4c; --bar:#35517f; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.4 system-ui, Segoe UI, sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font-size: 20px; margin: 0 0 14px; }
+  .bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--card); }
+  .seg button { border:0; background:none; color:var(--ink); padding:7px 14px; font:inherit; cursor:pointer; }
+  .seg button + button { border-left:1px solid var(--line); }
+  .seg button.on { background:var(--accent); color:#fff; }
+  .seg button:disabled { color:var(--mute); cursor:not-allowed; opacity:.6; }
+  input[type=search] { flex:1; min-width:160px; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); font:inherit; }
+  label.chk { color:var(--mute); font-size:13px; display:flex; gap:5px; align-items:center; }
+  .status { color:var(--mute); font-size:13px; margin:2px 0 12px; }
+  .warn { background:color-mix(in srgb, var(--hot) 12%, var(--card)); border:1px solid var(--hot); border-radius:8px; padding:8px 12px; margin-bottom:12px; font-size:13px; }
+  .list { background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .row { display:grid; grid-template-columns: 34px minmax(0,1fr) 80px 70px 70px 88px; gap:10px; align-items:center; padding:10px 14px; border-top:1px solid var(--line); cursor:pointer; }
+  .row:first-child { border-top:0; }
+  .row.head { cursor:default; color:var(--mute); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .row.head .s { cursor:pointer; } .row.head .s.on { color:var(--accent); }
+  .row:not(.head):hover { background:color-mix(in srgb, var(--accent) 6%, var(--card)); }
+  .rank { color:var(--mute); font-variant-numeric:tabular-nums; }
+  .name b { font-weight:600; } .name small { color:var(--mute); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .num { text-align:right; font-variant-numeric:tabular-nums; }
+  .num.big { font-weight:600; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--hot); margin-right:6px; }
+  svg.sp { width:88px; height:26px; display:block; }
+  .detail { grid-column:1 / -1; padding:4px 0 2px 44px; color:var(--mute); font-size:13px; cursor:default; }
+  .detail a { color:var(--accent); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; }
+  .chip { border:1px solid var(--line); border-radius:6px; padding:2px 8px; color:var(--ink); }
+  .empty { padding:30px; text-align:center; color:var(--mute); }
+  @media (max-width:640px) { .row { grid-template-columns: 26px minmax(0,1fr) 56px 56px; } .hide-s { display:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Reflector Activity</h1>
+  <div class="bar">
+    <div class="seg" id="modes"></div>
+    <div class="seg" id="windows"></div>
+    <input type="search" id="q" placeholder="Filter by name, country or description">
+    <label class="chk"><input type="checkbox" id="idle"> show idle</label>
+  </div>
+  <div class="status" id="status">Loading…</div>
+  <div id="warn"></div>
+  <div class="list" id="list"></div>
+  <p class="status" style="margin-top:14px">Counts are estimates from public sources, collected since this app started.
+    <a href="/guide" style="color:var(--accent)">User guide</a> explains what each number means and what the app does on the network.</p>
+</div>
+<script>
+const state = { mode: "dstar", window: 30, sort: "perHalfHour", open: new Set(), data: null, modes: {} };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+function spark(arr) {
+  const max = Math.max(1, ...arr), w = 88, h = 26, bw = w / arr.length;
+  return `<svg class="sp" viewBox="0 0 ${w} ${h}">` + arr.map((v, i) => {
+    const bh = v ? Math.max(2, (v / max) * (h - 2)) : 1;
+    return `<rect x="${i * bw + 1}" y="${h - bh}" width="${bw - 2}" height="${bh}" rx="1" fill="${v ? "var(--accent)" : "var(--line)"}"/>`;
+  }).join("") + `</svg>`;
+}
+function ago(ms) { if (ms == null) return "—"; const m = Math.round(ms / 60000); return m < 1 ? "just now" : m + " min ago"; }
+
+function render() {
+  const d = state.data;
+  if (!d) return;
+  const q = $("q").value.trim().toLowerCase(), idle = $("idle").checked;
+  const cols = d.columns || [];
+  const key = cols.some((c) => c.key === state.sort) ? state.sort : cols[0]?.key; // sort resets when the mode's columns differ
+  const k2 = cols.find((c) => c.key !== key)?.key;
+  let items = d.items.filter((r) => (idle || r.active) && (!q || (r.name + " " + r.country + " " + r.comment).toLowerCase().includes(q)));
+  const order = [key, ...cols.map((c) => c.key).filter((k) => k !== key)]; // sort by the chosen column, then the others
+  items.sort((a, b) => { for (const k of order) { const diff = (b[k] ?? 0) - (a[k] ?? 0); if (diff) return diff; } return a.name.localeCompare(b.name); });
+  if (!d.available) {
+    $("status").textContent = "";
+    $("warn").innerHTML = `<div class="warn">${esc(d.note)}</div>`;
+    $("list").innerHTML = `<div class="empty">Nothing to show for this mode yet.</div>`;
+    return;
+  }
+  const warm = d.collectedMin < d.windowMin;
+  $("warn").innerHTML = warm ? `<div class="warn">Collecting data: only ${d.collectedMin} min gathered so far, so the ${d.windowMin}-minute averages are still filling in. Leave it running.</div>` : "";  $("status").textContent = `${d.summary} · ${items.length} shown · refreshes every 30 s`;
+  const th = (c) => `<div class="num s ${key === c.key ? "on" : ""} ${c.hide ? "hide-s" : ""}" data-sort="${c.key}">${esc(c.label)}</div>`;
+  let html = `<div class="row head"><div>#</div><div>Reflector</div>${cols.map(th).join("")}<div class="hide-s">Last hour</div></div>`;
+  if (!items.length) html += `<div class="empty">No activity in the last ${d.windowMin} minutes${q ? " matching that filter" : ""}.</div>`;
+  items.forEach((r, i) => {
+    const live = r.lastHeardMsAgo != null && r.lastHeardMsAgo < 5 * 60000;
+    const rid = r.id ?? r.name;
+    const open = state.open.has(rid);
+    html += `<div class="row" data-name="${esc(rid)}">
+      <div class="rank">${i + 1}</div>
+      <div class="name"><b>${live ? '<span class="dot" title="heard in last 5 min"></span>' : ""}${r.name}</b>${r.topModule ? " · mod " + esc(r.topModule) : ""}<small>${esc(r.country)}${r.comment ? " — " + esc(r.comment) : ""}</small></div>
+      ${cols.map((c, ci) => `<div class="num ${ci === 0 ? "big" : ""} ${c.hide ? "hide-s" : ""}">${r[c.key] ?? "—"}</div>`).join("")}<div class="hide-s">${spark(r.spark)}</div>
+      ${open ? `<div class="detail" onclick="event.stopPropagation()">${r.detail ? esc(r.detail) : `Last heard: ${ago(r.lastHeardMsAgo)} · ${r.tx} transmissions in ${d.windowMin} min
+        <div class="chips">${r.modules.length ? r.modules.map((m) => `<span class="chip">Module ${esc(m.module)}: ${m.tx} tx, ${m.stations} stn</span>`).join("") : "<span>No module activity</span>"}</div>`}
+        ${r.dashboard ? `<a href="${esc(r.dashboard)}" target="_blank" rel="noopener">Open dashboard ↗</a>` : ""}</div>` : ""}
+    </div>`;
+  });
+  $("list").innerHTML = html;
+}
+
+async function load() {
+  try { state.data = await (await fetch(`/api/reflectors?mode=${state.mode}&window=${state.window}`)).json(); render(); }
+  catch { $("status").textContent = "Can't reach the local server."; }
+}
+
+function buildControls() {
+  $("modes").innerHTML = Object.entries(state.modes).map(([k, m]) =>
+    `<button data-mode="${k}" class="${k === state.mode ? "on" : ""}" ${m.available ? "" : 'title="' + esc(m.note) + '"'}>${esc(m.label)}${m.available ? "" : " (soon)"}</button>`).join("");
+  $("windows").innerHTML = [15, 30, 60].map((w) => `<button data-w="${w}" class="${w === state.window ? "on" : ""}">${w} min</button>`).join("");
+}
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-mode],[data-w],[data-sort],.row[data-name]");
+  if (!t) return;
+  if (t.dataset.mode) { state.mode = t.dataset.mode; buildControls(); load(); }
+  else if (t.dataset.w) { state.window = +t.dataset.w; buildControls(); load(); }
+  else if (t.dataset.sort) { state.sort = t.dataset.sort; render(); }
+  else if (t.dataset.name) { state.open.has(t.dataset.name) ? state.open.delete(t.dataset.name) : state.open.add(t.dataset.name); render(); }
+});
+$("q").addEventListener("input", render); $("idle").addEventListener("change", render);
+(async () => { state.modes = await (await fetch("/api/modes")).json(); buildControls(); load(); setInterval(load, 30000); })();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# Keep launcher scripts runnable on their own platform
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf

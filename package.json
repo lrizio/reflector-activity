@@ -1,0 +1,15 @@
+{
+  "name": "reflector-activity",
+  "version": "1.0.0",
+  "description": "Local dashboard ranking D-STAR, YSF and DMR reflectors by recent activity",
+  "type": "module",
+  "main": "server.mjs",
+  "private": true,
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "socket.io-client": "^2.5.0"
+  }
+}
