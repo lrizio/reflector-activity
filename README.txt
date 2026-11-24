@@ -32,6 +32,10 @@ IMPORTANT
 
 Mac/Linux: install Node.js 24 or newer, then run ./start.sh
 
+LICENCE
+-------
+Reflector Activity is released under the MIT licence (see the file LICENSE).
+
 BUNDLED SOFTWARE
 ----------------
 The Windows zip includes the Node.js runtime (runtime\node.exe), which is

@@ -39,6 +39,8 @@ powershell -ExecutionPolicy Bypass -File .\build-package.ps1
 
 Produces `dist/ReflectorActivity-<version>-windows.zip` (with Node bundled) and `-source.zip`. The build needs `licenses/NODE-LICENSE-<node version>.txt` for the Node it bundles.
 
-## Disclaimer
+## Licence and disclaimer
 
-Provided as is, without warranty, for personal amateur-radio use. You are responsible for how you use it, including your callsign and the load you put on other people's servers.
+Released under the [MIT licence](LICENSE). The Windows package also bundles Node.js, which has its own MIT licence (included as `runtime/LICENSE-node.txt`).
+
+Provided as is, without warranty. You are responsible for how you use it, including your callsign and the load you put on other people's servers. Counts come from public, unofficial sources and may change or disappear without notice.

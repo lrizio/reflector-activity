@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
 $dist = Join-Path $PSScriptRoot 'dist'
-$files = @('server.mjs', 'package.json', 'package-lock.json', 'start.cmd', 'start.sh', 'setup-config.ps1', 'README.txt')
+$files = @('server.mjs', 'package.json', 'package-lock.json', 'start.cmd', 'start.sh', 'setup-config.ps1', 'README.txt', 'LICENSE')
 
 function New-Stage([string]$name, [bool]$withNode) {
     $stage = Join-Path $dist $name
