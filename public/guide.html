@@ -148,9 +148,9 @@
 <tr><td>DMR tab is empty</td><td>Check your internet connection. The black window shows <code>[tgif] connected</code> when the feed is up.</td></tr>
 <tr><td>YSF tab shows only "Avg users"</td><td>The listener is off. Put your callsign in <code>config.json</code> and restart.</td></tr>
 <tr><td>A reflector I know is busy doesn't appear</td><td>It may not publish status or may not be covered (see section 4). The page only knows what the sources publish.</td></tr>
-<tr><td>Weird or stale data after a crash</td><td>The app repairs a damaged history file by itself. To start completely fresh, stop the app and delete the folder <code>%LOCALAPPDATA%ReflectorActivity</code> (Mac/Linux: <code>~/.reflector-activity</code>).</td></tr>
+<tr><td>Weird or stale data after a crash</td><td>The app repairs a damaged history file by itself. To start completely fresh, stop the app and delete the folder <code>%LOCALAPPDATA%\ReflectorActivity</code> (Mac/Linux: <code>~/.reflector-activity</code>).</td></tr>
 </table>
-<p>The black window's messages are also saved in <code>data\server.log</code>. If you report a problem, include the last lines of that file.</p>
+<p>The black window's messages are also saved in <code>server.log</code> in the same folder (<code>%LOCALAPPDATA%\ReflectorActivity</code>). If you report a problem, include the last lines of that file.</p>
 
 <h2 id="other">8. Mac, Linux, or your own Node</h2>
 <p>The Windows zip carries its own copy of Node.js in the <code>runtime</code> folder, so nothing needs installing. On other systems, or if you prefer your own Node:</p>
