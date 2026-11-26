@@ -1,6 +1,6 @@
 {
   "name": "reflector-activity",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Local dashboard ranking D-STAR, YSF and DMR reflectors by recent activity",
   "type": "module",
   "main": "server.mjs",
