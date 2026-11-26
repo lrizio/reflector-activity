@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import dns from "node:dns/promises";
 import net from "node:net";
+import os from "node:os";
 import ioClient from "socket.io-client"; // v2 client: TGIF runs the old socket.io protocol
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -18,8 +19,13 @@ const POLL_MS = 30_000;
 const LIST_URL = "http://xlxapi.rlx.lu/api.php?do=GetReflectorList";
 const KEEP_MS = 24 * 3600_000;
 
-fs.mkdirSync(path.join(DIR, "data"), { recursive: true });
-const DB_FILE = path.join(DIR, "data", "activity.db");
+// Live data (SQLite DB, caches, log) lives OUTSIDE the app folder: sync tools (Synology Drive,
+// OneDrive, Dropbox) copy a database mid-write and corrupt it. Override with DATA_DIR.
+const DATA = process.env.DATA_DIR || (process.platform === "win32"
+  ? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "ReflectorActivity")
+  : path.join(os.homedir(), ".reflector-activity"));
+fs.mkdirSync(DATA, { recursive: true });
+const DB_FILE = path.join(DATA, "activity.db");
 function openDb() {
   const d = new DatabaseSync(DB_FILE);
   try {
@@ -254,7 +260,7 @@ function startTgif() {
 // YSF reflectors answer a "YSFS" status query with their connected-user count. They don't
 // publish who is talking, so we track users over time instead.
 const YSF_URL = "https://www.pistar.uk/downloads/YSF_Hosts.txt"; // data provided by DVRef (https://dvref.com/aup/)
-const YSF_CACHE = path.join(DIR, "data", "YSFHosts.txt"); // also lets you drop in a list by hand
+const YSF_CACHE = path.join(DATA, "YSFHosts.txt"); // also lets you drop in a list by hand
 const ysfRefs = new Map();   // designator -> {id,name,desc,host,port,ip,users,lastReply,sent}
 const ysfByAddr = new Map(); // "ip:port" -> reflector
 const ysfBuf = [];
@@ -441,7 +447,7 @@ if (LISTEN_CALL && LISTEN_TOP) {
 // REF reflectors have no status protocol we can query, but ~70 of the numbered ones publish a
 // "DPLUS Dashboard" with a Last Heard table. We fetch each once a minute and count new rows.
 const DPLUS_LIST_URL = "https://www.pistar.uk/downloads/DPlus_Hosts.txt";
-const DASH_CACHE = path.join(DIR, "data", "dplus_dashboards.json");
+const DASH_CACHE = path.join(DATA, "dplus_dashboards.json");
 const DASH_HEADERS = { "user-agent": "reflector-activity/0.1 (personal local tool)" };
 
 function parseDplus(html) {

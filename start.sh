@@ -10,7 +10,8 @@ if [ "$(node -p 'process.versions.node.split(".")[0]')" -lt 24 ]; then
   echo "Your Node.js is too old; Reflector Activity needs Node.js 24 or newer."; exit 1
 fi
 [ -d node_modules ] || npm install --omit=dev || exit 1
-mkdir -p data
+DATA_DIR="${DATA_DIR:-$HOME/.reflector-activity}"; export DATA_DIR
+mkdir -p "$DATA_DIR"
 
 if [ ! -f config.json ]; then
   echo
@@ -27,4 +28,4 @@ case "$(uname)" in
   Darwin) [ -z "$NO_BROWSER" ] && (sleep 2; open "http://localhost:$PORT") & ;;
   *) [ -z "$NO_BROWSER" ] && command -v xdg-open >/dev/null 2>&1 && (sleep 2; xdg-open "http://localhost:$PORT" >/dev/null 2>&1) & ;;
 esac
-node server.mjs 2>&1 | tee data/server.log
+node server.mjs 2>&1 | tee "$DATA_DIR/server.log"
